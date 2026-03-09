@@ -29,11 +29,10 @@ def newton_method(theta0, tolerance=0.01):
 
     return theta
 
-# ── Run Newton's method ───────────────────────────────────────────────────────
 theta0        = np.radians(45.0)
 theta_optimal = newton_method(theta0)
 
-# ── Plot ──────────────────────────────────────────────────────────────────────
+
 t_final, u_final, traj = A2.simulate_projectile(theta_optimal, dt=0.01)
 
 plt.figure(figsize=(10, 5))
@@ -43,7 +42,7 @@ plt.plot(u_final[0], 0, 'ro', markersize=10, label=f'Landing point x={u_final[0]
 plt.axvline(x=2700, color='gray', linestyle='--', label='Target x=2700m')
 plt.xlabel('Horizontal distance (m)')
 plt.ylabel('Height (m)')
-plt.title("Newton's method — optimal firing angle")
+plt.title("Newton's method. Optimal firing angle")
 plt.legend()
 plt.grid(True)
 plt.tight_layout()

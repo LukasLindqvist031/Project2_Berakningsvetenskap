@@ -11,19 +11,19 @@ def gravitational_func(y):
 def drag_func(y):
     return k0 * np.exp(-1e-4 * y)
 
-def wind_func(t):                              # fixed: t not y
+def wind_func(t):
     return -20.0 * np.exp(-((t - 10) / 5)**2)
 
-def full_model(t, u):                          # fixed: renamed, uses t for wind
+def full_model(t, u):
     x, y, vx, vy = u
-    w      = wind_func(t)                      # fixed: pass t
-    g      = gravitational_func(y)
-    k      = drag_func(y)
-    v_norm = np.sqrt((vx - w)**2 + vy**2)     # fixed: relative velocity
+    w = wind_func(t)
+    g = gravitational_func(y)
+    k = drag_func(y)
+    v_norm = np.sqrt((vx - w)**2 + vy**2)
 
-    dx  = vx
-    dy  = vy
-    dvx = -k * v_norm * (vx - w)              # fixed: correct form
+    dx = vx
+    dy = vy
+    dvx = -k * v_norm * (vx - w)
     dvy = -k * v_norm * vy - g
 
     return np.array([dx, dy, dvx, dvy])
@@ -31,16 +31,16 @@ def full_model(t, u):                          # fixed: renamed, uses t for wind
 def simulate_projectile(theta, dt):
     vx0 = v0 * np.cos(theta)
     vy0 = v0 * np.sin(theta)
-    u   = np.array([0.0, 0.0, vx0, vy0])
-    t   = 0.0
+    u = np.array([0.0, 0.0, vx0, vy0])
+    t = 0.0
 
     trajectory = [u.copy()]
 
     while True:
-        k1 = full_model(t,        u)
+        k1 = full_model(t, u)
         k2 = full_model(t + dt/2, u + dt/2 * k1)
         k3 = full_model(t + dt/2, u + dt/2 * k2)
-        k4 = full_model(t + dt,   u + dt   * k3)
+        k4 = full_model(t + dt, u + dt * k3)
         u += (dt/6) * (k1 + 2*k2 + 2*k3 + k4)
         t += dt
         trajectory.append(u.copy())
@@ -50,13 +50,16 @@ def simulate_projectile(theta, dt):
 
     return t, u, np.array(trajectory)
 
-# ── Test different step sizes ─────────────────────────────────────────────────
+
+print(f"{'dt':>8} | {'xN (m)':>10} | {'yN (m)':>10}")
+print("-" * 36)
 for dt in [0.1, 0.05, 0.01, 0.005, 0.001]:
     t_final, u_final, traj = simulate_projectile(theta, dt)
-    print(f"dt: {dt:.3f}, xN: {u_final[0]:.2f} m, yN: {u_final[1]:.4f} m")
+    print(f"{dt:>8.3f} | {u_final[0]:>10.2f} | {u_final[1]:>10.4f}")
 
-# ── Plot best trajectory ──────────────────────────────────────────────────────
-t_final, u_final, traj = simulate_projectile(theta, dt=0.01)  # run again for plot
+
+# Figur med bra delta t
+t_final, u_final, traj = simulate_projectile(theta, dt=0.01)
 
 plt.figure(figsize=(10, 5))
 plt.plot(traj[:, 0], traj[:, 1], 'b-', linewidth=2, label='Trajectory')
@@ -68,4 +71,22 @@ plt.title('Projectile Trajectory with Air Resistance and Wind')
 plt.legend()
 plt.grid(True)
 plt.tight_layout()
+plt.savefig('trajectory_best_dt.png', dpi=150)
+plt.show()
+
+
+# Figur med väldigt litet delta t
+t_final_small, u_final_small, traj_small = simulate_projectile(theta, dt=0.0001)
+
+plt.figure(figsize=(10, 5))
+plt.plot(traj_small[:, 0], traj_small[:, 1], 'b-', linewidth=2, label='Trajectory')
+plt.plot(0, 0, 'go', markersize=10, label='Launch point')
+plt.plot(u_final_small[0], 0, 'ro', markersize=10, label=f'Landing point x={u_final_small[0]:.1f} m')
+plt.xlabel('Horizontal distance (m)')
+plt.ylabel('Height (m)')
+plt.title('Projectile Trajectory with Air Resistance and Wind')
+plt.legend()
+plt.grid(True)
+plt.tight_layout()
+plt.savefig('trajectory_small_dt.png', dpi=150)
 plt.show()
